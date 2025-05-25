@@ -1,0 +1,5 @@
+pygame==2.5.2
+numpy==1.26.4
+gym==0.26.2
+torch>=2.0.0,<3.0.0
+mlflow

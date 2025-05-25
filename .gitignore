@@ -1,0 +1,80 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cython debug symbols
+cython_debug/
+
+# Environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+*.conda
+
+# VSCode & IDE settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# MLflow artifacts & logs
+mlruns/
+mlflow.log
+
+# Python virtual environment files
+*.egg-info/
+*.egg
+dist/
+build/
+*.manifest
+*.spec
+
+# MacOS & system files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+*.bak
+*.swp
+
+# PyGame / SDL cache
+__sdlcache__/
+*.bmp
+
+# Test and coverage outputs
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+
+# Model weights/checkpoints
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Data
+*.csv
+*.xlsx
+
+# Output/plots
+*.png
+*.jpg
+*.svg
+
+# User local config
+*.env
+local_settings.py
