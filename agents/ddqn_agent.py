@@ -11,20 +11,17 @@ import mlflow.pytorch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# ====== GPU/CPU DEVICE SETUP ======
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Usando device:", device)
 
-sys.path.append("..")
-from env.snake_env import SnakeEnv  # <--- Correcto
+from env.snake_env import SnakeEnv  # Asegúrate de que esta ruta sea correcta
 
 # Hiperparámetros clave
-GAMMA = 0.98
+GAMMA = 0.99
 LR = 1e-3
-EPSILON_START = 2.0
-EPSILON_END = 0.01
+EPSILON_START = 1.0
+EPSILON_END = 0.005
 EPSILON_DECAY = 1000
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 MEM_SIZE = 10_000
 
 
@@ -70,11 +67,10 @@ def select_action(state, policy_net, epsilon, n_actions):
         return q_values.argmax().item()
 
 
-# 4. Entrenamiento DQN loop (core)
+# 4. Entrenamiento DDQN loop (core)
 def train():
-    env = SnakeEnv(render_mode="human", fps=480, stack_size=1)
+    env = SnakeEnv(render_mode="human", fps=240, stack_size=8)
 
-    # env = SnakeEnv(render_mode="human")  # <--- Correcto
     n_actions = env.action_space.n
     input_dim = env.observation_space.shape[0]
     policy_net = DQN(input_dim, n_actions).to(device)
@@ -88,7 +84,7 @@ def train():
     epsilon = EPSILON_START
     steps = 0
     episode_rewards = []
-    mlflow.set_experiment("snake-dqn")
+    mlflow.set_experiment("snake-ddqn")
     with mlflow.start_run():
         for episode in range(2000):
             state, _ = env.reset()
@@ -123,14 +119,14 @@ def train():
                         torch.tensor(dones, dtype=torch.float32).unsqueeze(1).to(device)
                     )
 
-                    # Q(s,a)
-                    q_values = policy_net(states).gather(1, actions)
-                    # Q(s', a') del target
+                    # DDQN: Selección de acción con policy_net, evaluación con target_net
+                    next_actions = policy_net(next_states).argmax(1).unsqueeze(1)
                     next_q_values = (
-                        target_net(next_states).max(1)[0].detach().unsqueeze(1)
+                        target_net(next_states).gather(1, next_actions).detach()
                     )
                     expected_q = rewards + GAMMA * next_q_values * (1 - dones)
 
+                    q_values = policy_net(states).gather(1, actions)
                     loss = nn.MSELoss()(q_values, expected_q)
                     optimizer.zero_grad()
                     loss.backward()
@@ -143,7 +139,7 @@ def train():
                 )
 
                 # Render (puedes comentar para hacerlo aún más rápido)
-                # env.render()
+                env.render()
 
             episode_rewards.append(total_reward)
             mlflow.log_metric("reward", total_reward, step=episode)
